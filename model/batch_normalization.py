@@ -12,29 +12,24 @@ class Solution:
         # Return (y, running_mean, running_var), all rounded to 4 decimals as lists
         
         X = np.array(x)
-        gamma = np.array(gamma)
+        gamman = np.array(gamma)
         beta = np.array(beta)
-        running_mean_np = np.array(running_mean)
-        running_var_np = np.array(running_var)
+        running_mean = np.array(running_mean)
+        running_var = np.array(running_var)
 
-        N = len(x)
-
-        B, F = X.shape
+        n_batch, n_feture = X.shape
 
         if training:
-            mu_B = np.mean(X, axis = 0)
-            var_B = np.var(X, axis = 0)
-            x_hat = (X - mu_B) / np.sqrt(var_B + eps)
-
-            running_mean_np = (1 - momentum) * running_mean_np + momentum * mu_B
-            running_var_np = (1 - momentum) * running_var_np + momentum * var_B
+            mu = np.mean(X, axis = 0)
+            var = np.var(X, axis = 0)
+            x_hat = (X-mu)/np.sqrt(var+eps)
+            
+            running_mean = (1 - momentum) * running_mean + momentum * mu
+            running_var = (1 - momentum) * running_var + momentum * var
+        
         else:
-            x_hat = (X - running_mean_np) / np.sqrt(running_var_np + eps)
+            x_hat = (X - running_mean)/np.sqrt(running_var + eps)
         
         y = gamma * x_hat + beta
 
-        y_rounded = np.round(y, 4).tolist()
-        running_mean_rounded = np.round(running_mean_np, 4).tolist()
-        running_var_rounded = np.round(running_var_np, 4).tolist()
-        
-        return y_rounded, running_mean_rounded, running_var_rounded
+        return np.round(y, 4), np.round(running_mean, 4), np.round(running_var, 4)
