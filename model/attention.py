@@ -24,15 +24,17 @@ class SingleHeadAttention(nn.Module):
         # 5. Return (scores @ V) rounded to 4 decimal places
         
         B, T, C = embedded.shape
+
         K = self.k(embedded)
         Q = self.q(embedded)
         V = self.v(embedded)
 
-        scores = Q @ K.transpose(-1,-2) / torch.sqrt(torch.tensor(self.attention_dim).to(embedded.device))
+        scores = Q @ K.transpose(-1, -2) / torch.sqrt(torch.tensor(self.attention_dim).to(embedded.device))
+
         mask = torch.tril(torch.ones(T,T).to(embedded.device))
         scores = scores.masked_fill(mask == 0, float('-inf'))
 
-        weights = torch.softmax(scores, dim=-1)
-        output = weights @ V
+        weighted = torch.softmax(scores, dim = -1)
 
-        return torch.round(output, decimals=4)
+        output = weighted @ V
+        return torch.round(output, decimals = 4)
