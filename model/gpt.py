@@ -13,29 +13,26 @@ class GPT(nn.Module):
         self.context_embedding = nn.Embedding(vocab_size, model_dim)
         self.position_embedding = nn.Embedding(context_length, model_dim)
         self.x = nn.Sequential(*[self.TransformerBlock(model_dim, num_heads) for _ in range(num_blocks)])
-        self.last_norm = nn.LayerNorm(model_dim)
-        self.vocab_projection = nn.Linear(model_dim, vocab_size)
-        pass
+        self.final_norm = nn.LayerNorm(model_dim)
+        self.projection = nn.Linear(model_dim, vocab_size)
+        return
 
     def forward(self, context: TensorType[int]) -> TensorType[float]:
         torch.manual_seed(0)
-        batch_size, seq_len = context.shape
         # 1. Add token embeddings + position embeddings (use torch.arange for positions)
-        content_embedding = self.context_embedding(context)
-        positions = torch.arange(seq_len, device = context.device)
-        position_embedding = self.position_embedding(positions)
-
-        x = content_embedding + position_embedding
-        
         # 2. Pass through transformer blocks
         # 3. Apply final LayerNorm, then project to vocab_size
         # 4. Return logits rounded to 4 decimal places (no softmax)
+        batch_size, seq_len = context.shape
+        context_embedding = self.context_embedding(context)
+        positions = torch.arange(seq_len, device = context.device)
+        position_embedding = self.position_embedding(positions)
+
+        x = context_embedding + position_embedding
         x = self.x(x)
-        x = self.last_norm(x)
-        logit = self.vocab_projection(x)
-        
+        x = self.final_norm(x)
+        logit = self.projection(x)
         return torch.round(logit, decimals=4)
-        
 
     # Do NOT modify the code below this line
     class TransformerBlock(nn.Module):
