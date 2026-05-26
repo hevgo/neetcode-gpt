@@ -12,8 +12,8 @@ class SingleHeadAttention(nn.Module):
         self.k = nn.Linear(embedding_dim, attention_dim, bias = False)
         self.q = nn.Linear(embedding_dim, attention_dim, bias = False)
         self.v = nn.Linear(embedding_dim, attention_dim, bias = False)
-        self.embedding_dim = embedding_dim
         self.attention_dim = attention_dim
+        self.embedding_dim = embedding_dim
 
     def forward(self, embedded: TensorType[float]) -> TensorType[float]:
         # 1. Project input through K, Q, V linear layers
@@ -24,7 +24,6 @@ class SingleHeadAttention(nn.Module):
         # 5. Return (scores @ V) rounded to 4 decimal places
         
         B, T, C = embedded.shape
-
         K = self.k(embedded)
         Q = self.q(embedded)
         V = self.v(embedded)
@@ -34,7 +33,8 @@ class SingleHeadAttention(nn.Module):
         mask = torch.tril(torch.ones(T,T).to(embedded.device))
         scores = scores.masked_fill(mask == 0, float('-inf'))
 
-        weighted = torch.softmax(scores, dim = -1)
+        weights = torch.softmax(scores, dim = -1)
 
-        output = weighted @ V
-        return torch.round(output, decimals = 4)
+        output = weights @ V
+
+        return torch.round(output, decimals=4)
