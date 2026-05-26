@@ -12,18 +12,17 @@ class MultiHeadedSelfAttention(nn.Module):
         # Use: self.SingleHeadAttention(embedding_dim, head_size)
         # After the heads, add an output projection: nn.Linear(attention_dim, attention_dim, bias=False)
         self.head_size = attention_dim // num_heads
-        self.multi_heads = nn.ModuleList([self.SingleHeadAttention(embedding_dim, self.head_size) for _ in range(num_heads)])
+        self.heads = nn.ModuleList([self.SingleHeadAttention(embedding_dim, self.head_size) for _ in range(num_heads)])
         self.projection = nn.Linear(attention_dim, attention_dim, bias = False)
 
     def forward(self, embedded: TensorType[float]) -> TensorType[float]:
         # Run each head on the input, concatenate outputs along dim=2
         # Pass concatenated result through the output projection (W_O)
         # Return result rounded to 4 decimal places
-        multi_heads = [head(embedded) for head in self.multi_heads]
-        concat_heads = torch.cat(multi_heads, dim = -1)
-        output = self.projection(concat_heads)
-        return torch.round(output, decimals = 4)
-
+        heads = [head(embedded) for head in self.heads]
+        concat_heads = torch.cat(heads, dim = -1)
+        projection = self.projection(concat_heads)
+        return torch.round(projection, decimals = 4)
 
     class SingleHeadAttention(nn.Module):
         def __init__(self, embedding_dim: int, attention_dim: int):
