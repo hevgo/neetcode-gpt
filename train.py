@@ -20,13 +20,13 @@ class Solution:
             start_idx = torch.randint(0, high_idx, (batch_size,))
 
             X = torch.stack([data[start:start+context_length] for start in start_idx])
-            Y = torch.stack([data[start+1 : start+context_length+1] for start in start_idx])
+            Y = torch.stack([data[start+1:start+context_length+1] for start in start_idx])
 
             logits = model(X)
-            logits_flat = logits.view(-1, logits.shape[-1])
-            targets_flat = Y.view(-1)
+            flat_logits = logits.view(-1, logits.shape[-1])
+            flat_target = Y.view(-1)
 
-            loss = F.cross_entropy(logits_flat, targets_flat)
+            loss = F.cross_entropy(flat_logits, flat_target)
 
             optimizer.zero_grad()
             loss.backward()
