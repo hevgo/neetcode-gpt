@@ -11,18 +11,13 @@ class KVCache:
         # Append new_k and new_v to the cache along the sequence dimension (dim=1).
         # On the first call, initialize the cache with the given tensors.
         # Return the full (cached) K and V tensors.
-        if self.cache_k is None and self.cache_v is None:
+        if self.cache_k is None or self.cache_v is None:
             self.cache_k = new_k
             self.cache_v = new_v
-            return self.cache_k, self.cache_v
-        
-        if self.cache_k is None or self.cache_v is None:
-            print ('error format')
-            return None, None
-        
-        self.cache_k = torch.cat([self.cache_k, new_k], dim = -2)
-        self.cache_v = torch.cat([self.cache_v, new_v], dim = -2)
-        return  self.cache_k, self.cache_v
+        else:
+            self.cache_k = torch.cat([self.cache_k, new_k], dim = -2)
+            self.cache_v = torch.cat([self.cache_v, new_v], dim = -2)
+        return self.cache_k, self.cache_v
 
     def clear(self):
         self.cache_k = None
@@ -35,7 +30,6 @@ class CachedAttention(nn.Module):
         self.q_proj = nn.Linear(model_dim, model_dim, bias=False)
         self.k_proj = nn.Linear(model_dim, model_dim, bias=False)
         self.v_proj = nn.Linear(model_dim, model_dim, bias=False)
-        self.kvcache = KVCache()
 
     def forward(self, x: torch.Tensor, kv_cache: Optional[KVCache] = None) -> Tuple[torch.Tensor, KVCache]:
         # 1. Project x into Q, K, V using the linear layers
@@ -45,13 +39,12 @@ class CachedAttention(nn.Module):
         # 2. If kv_cache is None, create a new KVCache
         if kv_cache is None:
             kv_cache = KVCache()
-        
         # 3. Update the cache with the new K and V
         full_k, full_v = kv_cache.update(k, v)
         # 4. Compute scaled dot-product attention using Q and the full cached K, V
         att_dim = full_k.shape[-1]
         scores = q @ full_k.transpose(-2,-1) / math.sqrt(att_dim)
-        weights = torch.softmax(scores, dim = -1)
-        output = weights @ full_v
+        scores = torch.softmax(scores, dim = -1)
+        logits = scores @ full_v
         # 5. Return (rounded output, kv_cache)
-        return (torch.round(output, decimals=4), kv_cache)
+        return (torch.round(logits, decimals=4), kv_cache)
