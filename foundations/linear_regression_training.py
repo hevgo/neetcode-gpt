@@ -40,9 +40,12 @@ class Solution:
         for _ in range(num_iterations):
             # forward
             model_prediction = self.get_model_prediction(X, weights)
-            for i in range(D):
-                dw = self.get_derivative(model_prediction, Y, N, X, i)
-                weights[i] -= self.learning_rate * dw
+
+            dw = -2 * np.dot(Y - model_prediction, X) / N
+            weights -= self.learning_rate * dw
+            # for i in range(D):
+            #     dw = self.get_derivative(model_prediction, Y, N, X, i)
+            #     weights[i] -= self.learning_rate * dw
         
         return np.round(weights, 5)
 
