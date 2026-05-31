@@ -9,16 +9,16 @@ class Solution:
         # w: 1D weight array
         # b: scalar bias
         # y_true: true target value
-        # Return: (dL_dw rounded to 5 decimals, dL_db rounded to 5 decimals)
+        #
         
-        # forward
+        # forward 
         z = x @ w + b
         y_pred = 1 / (1 + np.exp(-z))
-        loss = 0.5 * (y_pred - y_true)**2
 
-        # backward
-        dl_dy_pred = y_pred - y_true
-        dl_dz = (y_pred - y_true) * y_pred * (1 - y_pred)
+        loss = 0.5 * (y_pred - y_true)**2 # no need
+
+        dl_dy_pred = (y_pred - y_true)
+        dl_dz = (y_pred - y_true) * y_pred * (1- y_pred)
         dl_dw = dl_dz * x
         dl_db = np.sum(dl_dz)
 
