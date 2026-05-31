@@ -28,7 +28,6 @@ class Solution:
         N, D = X.shape
         y_N,  = Y.shape
         w_shape = initial_weights.shape # D, 1
-        print (w_shape)
 
         # dim checking
         if N != y_N:
