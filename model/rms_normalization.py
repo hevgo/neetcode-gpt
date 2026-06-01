@@ -10,8 +10,12 @@ class Solution:
         
         x = np.array(x)
         gamma = np.array(gamma)
-        
-        RMS = np.sqrt(np.mean(x**2) + eps)
+
+        B,  = x.shape
+        RMS = np.sqrt((1/B) * np.sum(x**2, axis = -1) + eps)
+
         x_hat = x/RMS
-        output = gamma * x_hat
-        return np.round(output, 4)
+
+        y = gamma * x_hat
+
+        return np.round(y, 4)
