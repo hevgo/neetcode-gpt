@@ -13,28 +13,26 @@ class SingleHeadAttention(nn.Module):
         self.q = nn.Linear(embedding_dim, attention_dim, bias = False)
         self.v = nn.Linear(embedding_dim, attention_dim, bias = False)
         self.attention_dim = attention_dim
-        self.embedding_dim = embedding_dim
+
+        return
 
     def forward(self, embedded: TensorType[float]) -> TensorType[float]:
-        # 1. Project input through K, Q, V linear layers
-        # 2. Compute attention scores: (Q @ K^T) / sqrt(attention_dim)
-        # 3. Apply causal mask: use torch.tril(torch.ones(...)) to build lower-triangular matrix,
-        #    then masked_fill positions where mask == 0 with float('-inf')
-        # 4. Apply softmax(dim=2) to masked scores
-        # 5. Return (scores @ V) rounded to 4 decimal places
         
         B, T, C = embedded.shape
-        K = self.k(embedded)
-        Q = self.q(embedded)
-        V = self.v(embedded)
+        
+        k = self.k(embedded)
+        q = self.q(embedded)
+        v = self.v(embedded)
 
-        scores = Q @ K.transpose(-1, -2) / torch.sqrt(torch.tensor(self.attention_dim).to(embedded.device))
+        # print (k.shape)
+        # print (q.shape)
+        # print (v.shape)
 
-        mask = torch.tril(torch.ones(T,T).to(embedded.device))
+        scores = q @ k.transpose(-2, -1) / math.sqrt(self.attention_dim)
+        mask = torch.tril(torch.ones((T,T), device = embedded.device))
         scores = scores.masked_fill(mask == 0, float('-inf'))
+        weights = torch.softmax(scores, dim=-1)
 
-        weights = torch.softmax(scores, dim = -1)
-
-        output = weights @ V
+        output = weights @ v
 
         return torch.round(output, decimals=4)
