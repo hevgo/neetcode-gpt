@@ -17,8 +17,7 @@ class TransformerBlock(nn.Module):
         self.multi_head = self.MultiHeadedSelfAttention(model_dim, num_heads)
         self.norm2 = nn.LayerNorm(model_dim)
         self.mlp = self.VanillaNeuralNetwork(model_dim)
-        return
-
+        
     def forward(self, embedded: TensorType[float]) -> TensorType[float]:
         torch.manual_seed(0)
         # Two residual connections with Pre-LN:
@@ -30,8 +29,8 @@ class TransformerBlock(nn.Module):
         x = x + self.multi_head(norm1)
         norm2 = self.norm2(x)
         x = x + self.mlp(norm2)
-
-        return torch.round(x, decimals = 4)
+        return torch.round(x, decimals=4)
+        
 
     class MultiHeadedSelfAttention(nn.Module):
 
